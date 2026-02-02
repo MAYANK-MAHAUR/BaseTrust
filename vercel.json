@@ -1,0 +1,22 @@
+{
+    "rewrites": [
+        {
+            "source": "/share/:id",
+            "destination": "/api/frame?id=:id"
+        },
+        {
+            "source": "/profile/:address",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/((?!api|_next|static|.*\\..*).*)",
+            "destination": "/index.html"
+        }
+    ],
+    "functions": {
+        "api/*.js": {
+            "memory": 1024,
+            "maxDuration": 10
+        }
+    }
+}

@@ -1,0 +1,118 @@
+import { ArrowLeft, FileText, ShieldCheck, HelpCircle } from 'lucide-react'
+import { Button } from './ui/button'
+import { Card } from './ui/card'
+
+export function Docs({ onBack }) {
+    return (
+        <div className="min-h-screen bg-background pb-20">
+            <main className="max-w-3xl mx-auto px-4 py-8 sm:py-12 safe-y">
+
+                {/* Header */}
+                <div className="mb-8">
+                    <Button variant="ghost" className="mb-4 pl-0 gap-2 hover:bg-transparent hover:text-primary" onClick={onBack}>
+                        <ArrowLeft className="w-4 h-4" />
+                        Back to Home
+                    </Button>
+                    <h1 className="text-3xl font-bold text-foreground">Documentation & FAQ</h1>
+                    <p className="text-muted-foreground mt-2">Everything you need to know about BasedTrust security and usage.</p>
+                </div>
+
+                <div className="space-y-8">
+                    {/* Security Audit Section */}
+                    <section>
+                        <Card className="p-6 border-green-500/20 bg-green-500/5">
+                            <div className="flex items-start gap-4">
+                                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
+                                    <ShieldCheck className="w-6 h-6 text-green-600" />
+                                </div>
+                                <div className="space-y-3 flex-1">
+                                    <h2 className="text-xl font-semibold">Security Audit Report</h2>
+                                    <p className="text-sm text-foreground/80 leading-relaxed">
+                                        Trust is our currency using Base. We have conducted comprehensive automated audits using industry-standard tools including Slither, Mythril, and Solidity Scan, achieving a security score of <strong>96.4/10</strong>.
+                                    </p>
+                                    <div className="pt-2">
+                                        <a
+                                            href="/Escrow_Audit_Report.docx"
+                                            download="BasedTrust_Audit_Report.docx"
+                                            className="inline-flex"
+                                        >
+                                            <Button className="gap-2 bg-green-600 hover:bg-green-700 text-white">
+                                                <FileText className="w-4 h-4" />
+                                                Download Audit Report
+                                            </Button>
+                                        </a>
+                                        <p className="text-xs text-muted-foreground mt-2">
+                                            Latest scan: Feb 1, 2026
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+                    </section>
+
+                    {/* How it Works */}
+                    <section className="space-y-4">
+                        <h2 className="text-2xl font-semibold flex items-center gap-2">
+                            <HelpCircle className="w-5 h-5 text-primary" />
+                            How it Works
+                        </h2>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <Card className="p-5 space-y-2">
+                                <h3 className="font-semibold text-primary">1. Create Deal</h3>
+                                <p className="text-sm text-muted-foreground">Buyer sets up terms (amount, deadline) and deposits funds into the secure smart contract.</p>
+                            </Card>
+                            <Card className="p-5 space-y-2">
+                                <h3 className="font-semibold text-primary">2. Seller Accepts</h3>
+                                <p className="text-sm text-muted-foreground">Seller reviews terms and accepts. This locks the agreement on-chain.</p>
+                            </Card>
+                            <Card className="p-5 space-y-2">
+                                <h3 className="font-semibold text-primary">3. Delivery</h3>
+                                <p className="text-sm text-muted-foreground">Seller delivers work and provides proof. Buyer reviews the delivery.</p>
+                            </Card>
+                            <Card className="p-5 space-y-2">
+                                <h3 className="font-semibold text-primary">4. Release</h3>
+                                <p className="text-sm text-muted-foreground">Buyer approves and funds are released instantly. If there's an issue, an arbiter resolves it.</p>
+                            </Card>
+                        </div>
+                    </section>
+
+                    {/* FAQ */}
+                    <section className="space-y-4">
+                        <h2 className="text-2xl font-semibold">Frequently Asked Questions</h2>
+
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <h3 className="font-medium text-foreground">Is my money safe?</h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    Yes. Funds are held in a non-custodial smart contract deployed on the Base network. Only the Buyer, Seller, or the neutral Arbiter (in case of dispute) can move funds. BasedTrust never has access to your private keys or funds.
+                                </p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h3 className="font-medium text-foreground">What happens if the seller disappears?</h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    If the Seller does not accept the deal within the deadline (3 days), you can reclaim your funds immediately. If they accept but don't deliver, you can raise a dispute to recover funds.
+                                </p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h3 className="font-medium text-foreground">Who is the Arbiter?</h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    Currently, the BasedTrust Admin acts as the neutral arbiter to resolve disputes fairly based on evidence provided (chat logs, proof of delivery). We are working on a decentralized community arbitration system.
+                                </p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h3 className="font-medium text-foreground">What are the fees?</h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    We charge a minimal 0.1% fee on successful transactions to support platform development and maintenance. Gas fees on Base are typically less than $0.05.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    )
+}

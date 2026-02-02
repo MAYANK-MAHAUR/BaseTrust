@@ -1,0 +1,16 @@
+{
+    "name": "basedtrust-subgraph",
+    "version": "0.1.0",
+    "scripts": {
+        "codegen": "graph codegen",
+        "build": "graph build",
+        "deploy": "graph deploy --studio escrow",
+        "create-local": "graph create --node http://localhost:8020/ basedtrust",
+        "remove-local": "graph remove --node http://localhost:8020/ basedtrust",
+        "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 basedtrust"
+    },
+    "dependencies": {
+        "@graphprotocol/graph-cli": "0.71.0",
+        "@graphprotocol/graph-ts": "0.35.1"
+    }
+}

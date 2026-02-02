@@ -1,0 +1,35 @@
+{
+    "accountAssociation": {
+        "header": "eyJmaWQiOjI1MzA3MjUsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg4MTYxNEVjODI4NTA1RTdCM0ZBNGRGYjkxNmRlNThlQzEwM2YyYzAyIn0",
+        "payload": "eyJkb21haW4iOiJiYXNlLXRydXN0LnZlcmNlbC5hcHAifQ",
+        "signature": "KqBcEE34ZNL5Y+wsnIUPVZt4Wby9NtlOIO5xmqo7KoMkqD60zjRa/GPfBdpn8wFDiC1R6dp3iT/diR5Y7AnVHxw="
+    },
+    "miniapp": {
+        "version": "1",
+        "name": "BasedTrust",
+        "homeUrl": "https://base-trust.vercel.app/",
+        "iconUrl": "https://base-trust.vercel.app/icon.png",
+        "splashImageUrl": "https://base-trust.vercel.app/splash.png",
+        "splashBackgroundColor": "#0052FF",
+        "subtitle": "Trustless Onchain Escrow",
+        "description": "Secure any P2P deal onchain on Base in seconds. No trust needed—just code. Supports ETH, USDC, and USDT with neutral arbiter dispute resolution.",
+        "screenshotUrls": [
+            "https://base-trust.vercel.app/og-image.png"
+        ],
+        "primaryCategory": "finance",
+        "tags": [
+            "escrow",
+            "p2p",
+            "onchain",
+            "base",
+            "defi"
+        ],
+        "heroImageUrl": "https://base-trust.vercel.app/og-image.png",
+        "tagline": "No trust needed—just code.",
+        "ogTitle": "BasedTrust - Onchain Escrow",
+        "ogDescription": "Secure, trustless escrow for onchain transactions. Protect both buyers and sellers on Base.",
+        "ogImageUrl": "https://base-trust.vercel.app/og-image.png",
+        "webhookUrl": "https://api.neynar.com/f/app/287d42c0-8e1c-439a-ae90-ea96d61fd372/event",
+        "payoutAddress": "0xec4C55967878d9b3e03a7da39CEA05B5EDf1bDdE"
+    }
+}

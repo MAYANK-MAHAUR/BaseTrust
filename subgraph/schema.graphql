@@ -1,0 +1,37 @@
+# Escrow entity - represents a single escrow deal
+type Escrow @entity {
+  id: ID! # escrowId from contract
+  buyer: Bytes!
+  seller: Bytes!
+  arbiter: Bytes!
+  token: Bytes!
+  amount: BigInt!
+  state: Int! # 0=AWAITING_ACCEPTANCE, 1=AWAITING_DELIVERY, 2=DELIVERED, 3=COMPLETE, 4=DISPUTED, 5=REFUNDED
+  acceptanceDeadline: BigInt
+  deliveryDeadline: BigInt
+  deliveryTimestamp: BigInt
+  description: String
+  createdAt: BigInt!
+  createdTxHash: Bytes!
+  updatedAt: BigInt!
+  events: [EscrowEvent!]! @derivedFrom(field: "escrow")
+}
+
+# Event log for escrow activity
+type EscrowEvent @entity {
+  id: ID! # txHash-logIndex
+  escrow: Escrow!
+  eventType: String! # Created, Accepted, Delivered, Released, Refunded, DisputeOpened, DisputeResolved, MutualCancel
+  timestamp: BigInt!
+  txHash: Bytes!
+  data: String # JSON encoded event-specific data
+}
+
+# Global stats
+type GlobalStats @entity {
+  id: ID! # "global"
+  totalEscrows: BigInt!
+  totalVolume: BigInt!
+  totalCompleted: BigInt!
+  totalDisputed: BigInt!
+}

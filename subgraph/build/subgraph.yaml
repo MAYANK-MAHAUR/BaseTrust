@@ -1,0 +1,41 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Escrow
+    network: base
+    source:
+      address: "0x704b136FC73e045FF8023afac1Fdd85b52197fd5"
+      abi: Escrow
+      startBlock: 41537387
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Escrow
+        - EscrowEvent
+      abis:
+        - name: Escrow
+          file: Escrow\abis\Escrow.json
+      eventHandlers:
+        - event: EscrowCreated(indexed uint256,indexed address,indexed address,uint256)
+          handler: handleEscrowCreated
+        - event: DealAccepted(indexed uint256,uint48)
+          handler: handleDealAccepted
+        - event: DeliveryConfirmed(indexed uint256)
+          handler: handleDeliveryConfirmed
+        - event: FundsReleased(indexed uint256,uint256)
+          handler: handleFundsReleased
+        - event: Refunded(indexed uint256,uint256)
+          handler: handleRefunded
+        - event: DisputeOpened(indexed uint256)
+          handler: handleDisputeOpened
+        - event: DisputeResolved(indexed uint256,indexed address)
+          handler: handleDisputeResolved
+        - event: MutualCancelCompleted(indexed uint256)
+          handler: handleMutualCancelCompleted
+      file: Escrow\Escrow.wasm
