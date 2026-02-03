@@ -3,7 +3,7 @@
 **Trustless P2P escrow system for the Agentic Economy.**
 
 > **[SYSTEM] PURPOSE:** Create secure deals, resolve disputes, and auto-release funds without human interference.
-> **[SYSTEM] NETWORK:** AI-powered trust verification on Base.
+> **[SYSTEM] NETWORK:** AI-powered trust verification on Base. 
 > **[SYSTEM] STATUS:** PREPARED_FOR_DEPLOYMENT
 
 ---
@@ -46,7 +46,7 @@ This is not just a UI; it is critical infrastructure for the future of automated
 Clone the repository and install dependencies:
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/MAYANK-MAHAUR/BaseTrust
 cd basetrust
 npm install
 ```
