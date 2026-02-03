@@ -3,8 +3,11 @@
 **Trustless P2P escrow system for the Agentic Economy.**
 
 > **[SYSTEM] PURPOSE:** Create secure deals, resolve disputes, and auto-release funds without human interference.
-> **[SYSTEM] NETWORK:** AI-powered trust verification on Base. 
-> **[SYSTEM] STATUS:** PREPARED_FOR_DEPLOYMENT
+
+> **[SYSTEM] NETWORK:** AI-powered trust verification on Base.
+> 
+> **[SYSTEM] STATUS:** PREPARED_FOR_DEPLOYMENT.
+
 
 ---
 
