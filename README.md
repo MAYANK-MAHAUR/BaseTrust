@@ -5,7 +5,7 @@
 > **[SYSTEM] PURPOSE:** Create secure deals, resolve disputes, and auto-release funds without human interference.
 
 > **[SYSTEM] NETWORK:** AI-powered trust verification on Base.
-> 
+
 > **[SYSTEM] STATUS:** PREPARED_FOR_DEPLOYMENT.
 
 
@@ -42,7 +42,7 @@ This is not just a UI; it is critical infrastructure for the future of automated
 ### Prerequisites
 
 -   Use **Node.js 20+** (LTS recommended)
--   **npm** or **yarn**
+-   **npm** 
 
 ### Installation
 
@@ -56,7 +56,7 @@ npm install
 
 ### Configuration
 
-Create a `.env` file in the root directory. **Do not commit this file.**
+Create a `.env` file in the root directory.
 
 ```env
 # Supabase Configuration (Required for database & realtime)
@@ -65,9 +65,6 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # Smart Contract Deployment (Required for deploying contracts)
 PRIVATE_KEY=your_wallet_private_key
-
-# Optional Configuration
-USDC_ADDRESS=0x... # Override USDC address if needed (defaults to Base native USDC)
 ```
 
 ### 📜 Available Scripts
