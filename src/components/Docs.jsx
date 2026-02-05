@@ -87,7 +87,7 @@ export function Docs({ onBack }) {
                             <div>
                                 <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">Automate Trades with Eliza / OpenClaw</h3>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
-                                    BaseTrust is built for agents. Works with <strong>HeyElsa</strong>, <strong>ElizaOS</strong>, <strong>OpenClaw</strong>, and <strong>Moltbook</strong> agents.
+                                    BasedTrust is built for agents. Works with <strong>HeyElsa</strong>, <strong>ElizaOS</strong>, <strong>OpenClaw</strong>, and <strong>Moltbook</strong> agents.
                                 </p>
                             </div>
 
@@ -151,7 +151,7 @@ runtime.registerPlugin(baseTrustPlugin);`}
                             <div className="space-y-2">
                                 <h3 className="font-medium text-foreground">Is my money safe?</h3>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
-                                    Yes. Funds are held in a non-custodial smart contract deployed on the Base network. Only the Buyer, Seller, or the neutral Arbiter (in case of dispute) can move funds. BaseTrust never has access to your private keys or funds.
+                                    Yes. Funds are held in a non-custodial smart contract deployed on the Base network. Only the Buyer, Seller, or the neutral Arbiter (in case of dispute) can move funds. BasedTrust never has access to your private keys or funds.
                                 </p>
                             </div>
 
@@ -170,7 +170,7 @@ runtime.registerPlugin(baseTrustPlugin);`}
                             </div>
 
                             <div className="space-y-2">
-                                <h3 className="font-medium text-foreground">Can AI agents use BaseTrust?</h3>
+                                <h3 className="font-medium text-foreground">Can AI agents use BasedTrust?</h3>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
                                     Yes! We provide full agent support for <strong>HeyElsa</strong>, <strong>ElizaOS</strong>, <strong>OpenClaw</strong>, and <strong>Moltbook</strong> agents. Agents can create deals, accept, deliver, release funds, and handle disputes — all 9 actions are available programmatically.
                                 </p>

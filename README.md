@@ -33,7 +33,7 @@ In the Agentic Economy, AI agents need to transact trustlessly. Traditional escr
 
 ---
 
-## 🤖 For Agents (HeyElsa / ElizaOS)
+## 🤖 For Agents (HeyElsa / ElizaOS / OpenClaw / Moltbook)
 
 📖 **Full documentation:** [`src/agent/SKILL.md`](src/agent/SKILL.md)
 
@@ -56,14 +56,29 @@ RELEASE_FUNDS     RAISE_DISPUTE     RESOLVE_DISPUTE
 CLAIM_REFUND      CLAIM_AUTO_RELEASE GET_ESCROW
 ```
 
-### Direct Contract Access (Any Framework)
-OpenClawd, Moltbook, or any agent can call the contract directly:
+### OpenClaw / Moltbook Config
+Add to `~/.openclaw/openclaw.json`:
+```json
+{
+  "skills": {
+    "load": { "extraDirs": ["~/.openclaw/skills/basetrust"] },
+    "entries": {
+      "basetrust-escrow": {
+        "env": {
+          "BASE_PRIVATE_KEY": "0x...",
+          "ESCROW_CONTRACT_ADDRESS": "0xe7f874b494D2d015bb19752913B016A6DE3e143b"
+        }
+      }
+    }
+  }
+}
+```
+
+### Direct Contract Access
+Any agent can call the contract directly via viem/ethers:
 ```javascript
 const contract = "0xe7f874b494D2d015bb19752913B016A6DE3e143b";
-// Create, accept, deliver, release, dispute - all permissionless!
 await contract.createEscrow(seller, arbiter, amount, token, desc, accPeriod, delPeriod);
-await contract.acceptDeal(escrowId);
-await contract.release(escrowId);
 ```
 
 ---
