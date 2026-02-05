@@ -9,16 +9,23 @@ export function IdentityModal() {
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
-        if (!localStorage.getItem("basetrust_identity")) setIsOpen(true);
+        // Show modal once per session (not permanently dismissed)
+        if (!sessionStorage.getItem("basetrust_identity_shown")) {
+            setIsOpen(true);
+        }
     }, []);
 
     const handleHuman = () => {
+        sessionStorage.setItem("basetrust_identity_shown", "true");
         localStorage.setItem("basetrust_identity", "human");
         setIsOpen(false);
     };
 
     const handleAgent = () => setView("agent");
-    const handleClose = () => setIsOpen(false);
+    const handleClose = () => {
+        sessionStorage.setItem("basetrust_identity_shown", "true");
+        setIsOpen(false);
+    };
 
     const copyToClipboard = (text) => {
         navigator.clipboard.writeText(text);
