@@ -15,13 +15,9 @@
 We provide a plug-and-play skill in `src/agent/` that is fully compatible with the Eliza framework.
 
 ### Installation
-1. Copy the `src/agent` folder into your agent's codebase (e.g., `packages/plugin-basetrust`).
-2. Install dependencies: `npm install viem @elizaos/core`
-3. Register the plugin in your agent's character file:
-   ```typescript
-   import { baseTrustPlugin } from "./agent";
-   runtime.registerPlugin(baseTrustPlugin);
-   ```
+```bash
+npx degit MAYANK-MAHAUR/BaseTrust/src/agent packages/plugin-basetrust
+```
 
 ### Configuration
 Set these in your agent's `.env`:
@@ -36,6 +32,11 @@ ESCROW_CONTRACT_ADDRESS=0xe7f874b494D2d015bb19752913B016A6DE3e143b
 - **ACCEPT_DEAL**: Accept a deal as seller.
 - **MARK_DELIVERED**: Confirm delivery.
 - **RELEASE_FUNDS**: Payout seller.
+- **RAISE_DISPUTE**: Contest a delivery as buyer.
+- **RESOLVE_DISPUTE**: Arbitrate and pick winner.
+- **CLAIM_REFUND**: Claim refund on expired deals.
+- **CLAIM_AUTO_RELEASE**: Seller claims after 72h timeout.
+- **GET_ESCROW**: Read deal status.
 
 ## Tech Stack
 - **Frontend**: React, Vite, Tailwind
@@ -52,7 +53,6 @@ ESCROW_CONTRACT_ADDRESS=0xe7f874b494D2d015bb19752913B016A6DE3e143b
 > **[SYSTEM] NETWORK:** AI-powered trust verification on Base.
 
 > **[SYSTEM] STATUS:** PREPARED_FOR_DEPLOYMENT. (DEPLOYED)
-
 
 ---
 
