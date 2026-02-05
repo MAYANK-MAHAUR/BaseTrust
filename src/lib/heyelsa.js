@@ -20,7 +20,7 @@ import {
     pad,
     toHex
 } from 'viem';
-import { privateKeyToAccount } => from 'viem/accounts';
+import { privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 
 // Use proxy in production to bypass CORS, direct API in development (if CORS allows)
@@ -66,7 +66,7 @@ async function createPaymentSignature(paymentDetails) {
         const finalRecipient = recipient || payTo;
         const finalAmount = amount || maxAmountRequired;
         const finalNonce = nonce || Date.now().toString(); // Generate nonce if missing
-        const finalExpires = expires || (Date.now() + 3600 * 1000).toString(); // Default 1h expiry
+        const finalExpires = expires || Math.floor(Date.now() / 1000 + 60).toString(); // Default 60s expiry (seconds for EIP-3009)
 
         if (!finalAmount || !finalRecipient) {
             // Check if nested in 'requirements'
@@ -138,7 +138,7 @@ async function createPaymentSignature(paymentDetails) {
             payer: account.address,
         }));
 
-        console.log('[HeyElsa x402] Payment signed for:', amount, 'USDC');
+        console.log('[HeyElsa x402] Payment signed for:', finalAmount, 'USDC (wei)');
         return paymentHeader;
     } catch (error) {
         console.error('[HeyElsa x402] Failed to create payment:', error.message);
