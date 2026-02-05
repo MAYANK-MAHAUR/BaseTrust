@@ -105,7 +105,7 @@ ESCROW_CONTRACT_ADDRESS=0xe7f874b494D2d015bb19752913B016A6DE3e143b`}
                             <div className="space-y-2">
                                 <h4 className="font-semibold text-sm">Available Actions</h4>
                                 <div className="grid grid-cols-3 gap-2 text-xs">
-                                    {["CREATE_ESCROW", "ACCEPT_DEAL", "MARK_DELIVERED", "RELEASE_FUNDS", "RAISE_DISPUTE", "RESOLVE_DISPUTE", "CLAIM_REFUND", "AUTO_RELEASE", "GET_ESCROW"].map(action => (
+                                    {["CREATE_ESCROW", "ACCEPT_DEAL", "MARK_DELIVERED", "RELEASE_FUNDS", "RAISE_DISPUTE", "RESOLVE_DISPUTE", "CLAIM_REFUND", "CLAIM_AUTO_RELEASE", "GET_ESCROW"].map(action => (
                                         <div key={action} className="bg-muted/30 px-2 py-1.5 rounded-lg font-mono text-muted-foreground text-[10px]">
                                             {action}
                                         </div>
