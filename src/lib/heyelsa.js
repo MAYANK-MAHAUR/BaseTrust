@@ -65,8 +65,15 @@ async function createPaymentSignature(paymentDetails) {
         // Map fields with fallbacks
         const finalRecipient = recipient || payTo;
         const finalAmount = amount || maxAmountRequired;
-        const finalNonce = nonce || Date.now().toString(); // Generate nonce if missing
-        const finalExpires = expires || Math.floor(Date.now() / 1000 + 60).toString(); // Default 60s expiry (seconds for EIP-3009)
+
+        let finalNonce = nonce;
+        if (!finalNonce) {
+            const randomBytes = new Uint8Array(32);
+            crypto.getRandomValues(randomBytes);
+            finalNonce = toHex(randomBytes);
+        }
+
+        const finalExpires = expires || Math.floor(Date.now() / 1000 + 60).toString(); // Default 60s expiry
 
         if (!finalAmount || !finalRecipient) {
             // Check if nested in 'requirements'
@@ -111,7 +118,7 @@ async function createPaymentSignature(paymentDetails) {
             value: amountWei,
             validAfter: 0n,
             validBefore: BigInt(finalExpires), // 1h expiry
-            nonce: pad(toHex(BigInt(finalNonce)), { size: 32 }), // pad nonce to bytes32
+            nonce: finalNonce, // already bytes32 hex
         };
 
         console.log('[HeyElsa x402] Signing EIP-3009 TransferWithAuthorization:', values);

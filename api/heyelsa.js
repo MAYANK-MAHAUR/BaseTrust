@@ -37,6 +37,8 @@ export default async function handler(req, res) {
             headers['X-PAYMENT'] = req.headers['x-payment'];
         }
 
+        console.log('[HeyElsa Proxy] Outgoing Headers:', JSON.stringify(headers));
+
         const fetchOptions = {
             method: req.method,
             headers,
