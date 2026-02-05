@@ -12,8 +12,15 @@
  * 4. Server verifies and returns data
  */
 
-import { createWalletClient, http, parseUnits } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
+import {
+    createWalletClient,
+    http,
+    parseUnits,
+    stringToHex,
+    pad,
+    toHex
+} from 'viem';
+import { privateKeyToAccount } => from 'viem/accounts';
 import { base } from 'viem/chains';
 
 // Use proxy in production to bypass CORS, direct API in development (if CORS allows)
