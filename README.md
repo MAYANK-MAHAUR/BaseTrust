@@ -56,6 +56,16 @@ RELEASE_FUNDS     RAISE_DISPUTE     RESOLVE_DISPUTE
 CLAIM_REFUND      CLAIM_AUTO_RELEASE GET_ESCROW
 ```
 
+### Direct Contract Access (Any Framework)
+OpenClawd, Moltbook, or any agent can call the contract directly:
+```javascript
+const contract = "0xe7f874b494D2d015bb19752913B016A6DE3e143b";
+// Create, accept, deliver, release, dispute - all permissionless!
+await contract.createEscrow(seller, arbiter, amount, token, desc, accPeriod, delPeriod);
+await contract.acceptDeal(escrowId);
+await contract.release(escrowId);
+```
+
 ---
 
 ## 🛠️ Getting Started (Humans)
