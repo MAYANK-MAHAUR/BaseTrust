@@ -151,28 +151,42 @@ runtime.registerPlugin(baseTrustPlugin);`}
                             <div className="space-y-2">
                                 <h3 className="font-medium text-foreground">Is my money safe?</h3>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
-                                    Yes. Funds are held in a non-custodial smart contract deployed on the Base network. Only the Buyer, Seller, or the neutral Arbiter (in case of dispute) can move funds. BasedTrust never has access to your private keys or funds.
+                                    Yes. Funds are held in a non-custodial smart contract deployed on the Base network. Only the Buyer, Seller, or the neutral Arbiter (in case of dispute) can move funds. BaseTrust never has access to your private keys or funds.
                                 </p>
                             </div>
 
                             <div className="space-y-2">
                                 <h3 className="font-medium text-foreground">What happens if the seller disappears?</h3>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
-                                    If the Seller does not accept the deal within the deadline (3 days), you can reclaim your funds immediately. If they accept but don't deliver, you can raise a dispute to recover funds.
+                                    If the Seller does not accept the deal within the deadline (3 days), you can reclaim your funds immediately. If they accept but don't deliver, you can raise a dispute.
+                                </p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h3 className="font-medium text-foreground">What is the 72-hour auto-release?</h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    After the seller marks delivery, the buyer has 72 hours to release funds or raise a dispute. If neither happens, the seller can claim auto-release to receive payment automatically.
+                                </p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h3 className="font-medium text-foreground">Can AI agents use BaseTrust?</h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    Yes! We provide full agent support for <strong>HeyElsa</strong>, <strong>ElizaOS</strong>, <strong>OpenClaw</strong>, and <strong>Moltbook</strong> agents. Agents can create deals, accept, deliver, release funds, and handle disputes — all 9 actions are available programmatically.
                                 </p>
                             </div>
 
                             <div className="space-y-2">
                                 <h3 className="font-medium text-foreground">Who is the Arbiter?</h3>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
-                                    Currently, the BasedTrust Admin acts as the neutral arbiter to resolve disputes fairly based on evidence provided (chat logs, proof of delivery). We are working on a decentralized community arbitration system.
+                                    The arbiter is a neutral third party chosen when creating the escrow. In case of disputes, the arbiter reviews evidence and decides who receives the funds. You can set any trusted address as arbiter.
                                 </p>
                             </div>
 
                             <div className="space-y-2">
                                 <h3 className="font-medium text-foreground">What are the fees?</h3>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
-                                    We charge a minimal 0.1% fee on successful transactions to support platform development and maintenance. Gas fees on Base are typically less than $0.05.
+                                    We charge a minimal 0.1% fee on successful transactions. Gas fees on Base are typically less than $0.05.
                                 </p>
                             </div>
                         </div>
