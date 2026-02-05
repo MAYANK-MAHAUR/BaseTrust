@@ -132,9 +132,11 @@ async function createPaymentSignature(paymentDetails) {
         });
 
         // Create the X-PAYMENT header value
-        // Server expects the signed message params to verify/execute
-        const paymentHeader = btoa(JSON.stringify({
+        const payload = {
             version: '1',
+            scheme: 'exact', // Add metadata
+            network: 'base',
+            token: USDC_ADDRESS,
             message: {
                 ...values,
                 value: values.value.toString(),
@@ -143,7 +145,11 @@ async function createPaymentSignature(paymentDetails) {
             },
             signature,
             payer: account.address,
-        }));
+        };
+
+        const paymentHeader = btoa(JSON.stringify(payload));
+
+        console.log('[HeyElsa x402] Generated Payment Payload:', payload);
 
         console.log('[HeyElsa x402] Payment signed for:', finalAmount, 'USDC (wei)');
         return paymentHeader;
