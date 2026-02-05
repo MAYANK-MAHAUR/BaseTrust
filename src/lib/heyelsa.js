@@ -56,23 +56,31 @@ async function createPaymentSignature(paymentDetails) {
         // Extract payment info
         console.log('[HeyElsa x402] Creating signature for requirements:', paymentDetails);
 
-        const { recipient, amount, nonce, expires } = paymentDetails || {};
+        const { recipient, amount, nonce, expires, maxAmountRequired } = paymentDetails || {};
+        const finalAmount = amount || maxAmountRequired;
 
-        if (!amount || !recipient || !nonce || !expires) {
+        if (!finalAmount || !recipient || !nonce || !expires) {
             // Check if nested in 'requirements'
             if (paymentDetails?.requirements) {
                 return createPaymentSignature(paymentDetails.requirements);
             }
             // Check if nested in 'accepts' array (Standard x402)
             if (Array.isArray(paymentDetails?.accepts) && paymentDetails.accepts.length > 0) {
-                console.log('[HeyElsa x402] Found payment requirements in accepts[0]');
+                console.log('[HeyElsa x402] Found payment requirements in accepts[0]:', paymentDetails.accepts[0]);
                 return createPaymentSignature(paymentDetails.accepts[0]);
             }
             console.error('[HeyElsa x402] Invalid payment requirements structure:', paymentDetails);
+            console.error('[HeyElsa x402] Missing fields:', {
+                amount: !finalAmount,
+                recipient: !recipient,
+                nonce: !nonce,
+                expires: !expires,
+                keys: Object.keys(paymentDetails || {})
+            });
             return null;
         }
 
-        const amountWei = parseUnits(amount.toString(), 6); // USDC has 6 decimals
+        const amountWei = parseUnits(finalAmount.toString(), 6); // USDC has 6 decimals
 
         // Create payment message to sign
         const message = JSON.stringify({
