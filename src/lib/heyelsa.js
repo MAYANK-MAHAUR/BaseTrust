@@ -2,7 +2,8 @@
  * HeyElsa x402 API Client
  * DeFi API integration with micropayments for token prices and wallet analysis
  * 
- * Powered by HeyElsa - https://x402-api.heyelsa.ai
+ * Powered by HeyElsa - https://x402.heyelsa.ai
+ * Official Docs: https://x402.heyelsa.ai/docs
  * 
  * x402 Payment Protocol:
  * 1. Initial request returns 402 with payment requirements
@@ -11,14 +12,14 @@
  * 4. Server verifies and returns data
  */
 
-import { createWalletClient, http, parseUnits, encodeFunctionData } from 'viem';
+import { createWalletClient, http, parseUnits } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 
-// Use proxy in production to bypass CORS, direct API in development for testing
+// Use proxy in production to bypass CORS, direct API in development (if CORS allows)
 const IS_PRODUCTION = import.meta.env.PROD;
 const HEYELSA_PROXY_URL = '/api/heyelsa';
-// UPDATED: Correct API URL from HeyElsa documentation
+// Correct Base URL from Docs
 const HEYELSA_DIRECT_URL = import.meta.env.VITE_HEYELSA_API_URL || 'https://x402-api.heyelsa.ai';
 const PAYMENT_PRIVATE_KEY = import.meta.env.VITE_HEYELSA_PAYMENT_KEY;
 
@@ -103,22 +104,16 @@ class HeyElsaClient {
         } else {
             console.log('[HeyElsa] Using direct API (development)');
         }
-
-        if (this.x402Enabled) {
-            console.log('[HeyElsa] x402 payments ENABLED');
-        } else {
-            console.log('[HeyElsa] x402 payments DISABLED (no VITE_HEYELSA_PAYMENT_KEY)');
-        }
     }
 
     /**
      * Make an x402 API request with automatic payment handling
-     * @param {string} endpoint - API endpoint
-     * @param {object} params - Query parameters
+     * @param {string} endpoint - API endpoint (e.g., /api/get_token_price)
+     * @param {object} body - JSON payload
      * @returns {object} API response data
      */
-    async request(endpoint, params = {}) {
-        const cacheKey = `${endpoint}:${JSON.stringify(params)}`;
+    async request(endpoint, body = {}) {
+        const cacheKey = `${endpoint}:${JSON.stringify(body)}`;
         const cached = this.cache.get(cacheKey);
 
         if (cached && Date.now() - cached.timestamp < this.cacheTTL) {
@@ -128,36 +123,29 @@ class HeyElsaClient {
 
         // Build URL based on environment
         let url;
+        let fetchOptions = {
+            method: 'POST', // API uses POST for everything
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body)
+        };
+
         if (this.useProxy) {
-            // Use Vercel proxy - pass endpoint as query param
+            // Use Vercel proxy - pass endpoint as query param, body as POST body
             url = new URL(HEYELSA_PROXY_URL, window.location.origin);
             url.searchParams.append('endpoint', endpoint);
-            Object.entries(params).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                    url.searchParams.append(key, value);
-                }
-            });
         } else {
             // Direct API call (development)
             url = new URL(`${HEYELSA_DIRECT_URL}${endpoint}`);
-            Object.entries(params).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                    url.searchParams.append(key, value);
-                }
-            });
         }
 
-        console.log('[HeyElsa] Requesting:', url.toString());
+        console.log('[HeyElsa] Requesting:', url.toString(), 'Body:', body);
 
         try {
             // First attempt - may return 402 Payment Required
-            let response = await fetch(url.toString(), {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-            });
+            let response = await fetch(url.toString(), fetchOptions);
 
             // Handle x402 Payment Required
             if (response.status === 402 && this.x402Enabled) {
@@ -168,21 +156,13 @@ class HeyElsaClient {
 
                 if (paymentHeader) {
                     // Retry with payment header
-                    response = await fetch(url.toString(), {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'X-PAYMENT': paymentHeader,
-                        },
-                    });
-
+                    fetchOptions.headers['X-PAYMENT'] = paymentHeader;
+                    response = await fetch(url.toString(), fetchOptions);
                     console.log('[HeyElsa x402] Retry status:', response.status);
                 }
             }
 
             if (!response.ok) {
-                // Try to read error body for better debugging of Vercel proxy errors
                 let errorDetails = '';
                 try {
                     const errorText = await response.text();
@@ -200,7 +180,6 @@ class HeyElsaClient {
             // Cache successful responses
             this.cache.set(cacheKey, { data, timestamp: Date.now() });
 
-            console.log('[HeyElsa] Response:', data);
             return data;
         } catch (error) {
             console.warn('[HeyElsa] API request failed:', error.message);
@@ -210,8 +189,7 @@ class HeyElsaClient {
 
     /**
      * Get token price in USD
-     * @param {string} tokenSymbol - Token symbol (ETH, USDC, USDT)
-     * @param {string} chain - Chain name (default: base)
+     * Endpoint: /api/get_token_price
      */
     async getTokenPrice(tokenSymbol, chain = 'base') {
         const tokenAddress = TOKEN_ADDRESSES[tokenSymbol.toUpperCase()];
@@ -221,13 +199,17 @@ class HeyElsaClient {
         }
 
         try {
-            const response = await this.request('/v1/token/price', {
+            const response = await this.request('/api/get_token_price', {
                 token_address: tokenAddress,
                 chain: chain,
             });
 
+            // Handle response format variations (check docs/response)
+            const price = response?.price_usd || response?.price || response?.result?.priceUSD;
+            if (!price) return null;
+
             return {
-                price: response?.price_usd || response?.price || null,
+                price: parseFloat(price),
                 symbol: tokenSymbol,
                 source: 'heyelsa',
             };
@@ -239,12 +221,11 @@ class HeyElsaClient {
 
     /**
      * Analyze a wallet's behavior and risk
-     * @param {string} walletAddress - Wallet address to analyze
-     * @param {string} chain - Chain name (default: base)
+     * Endpoint: /api/analyze_wallet
      */
     async analyzeWallet(walletAddress, chain = 'base') {
         try {
-            const response = await this.request('/v1/wallet/analyze', {
+            const response = await this.request('/api/analyze_wallet', {
                 wallet_address: walletAddress,
                 chain: chain,
             });
@@ -252,11 +233,9 @@ class HeyElsaClient {
             return {
                 riskLevel: response?.risk_level || 'unknown',
                 riskScore: response?.risk_score || 0,
-                walletAge: response?.wallet_age_days || null,
-                txCount: response?.transaction_count || 0,
-                portfolio: response?.portfolio_usd || 0,
-                labels: response?.labels || [],
+                // Map other fields as needed based on actual API response
                 source: 'heyelsa',
+                raw: response
             };
         } catch (error) {
             console.warn('[HeyElsa] analyzeWallet failed:', error.message);
@@ -265,20 +244,20 @@ class HeyElsaClient {
     }
 
     /**
-     * Get portfolio balances for a wallet
-     * @param {string} walletAddress - Wallet address
-     * @param {string} chain - Chain name (default: base)
+     * Get portfolio balances
+     * Endpoint: /api/get_portfolio
      */
     async getPortfolio(walletAddress, chain = 'base') {
         try {
-            const response = await this.request('/v1/portfolio', {
+            const response = await this.request('/api/get_portfolio', {
                 wallet_address: walletAddress,
                 chain: chain,
             });
 
             return {
-                totalUsd: response?.total_usd || 0,
-                tokens: response?.tokens || [],
+                totalUsd: response?.total_value_usd || 0,
+                chains: response?.chains || [],
+                portfolio: response?.portfolio || {},
                 source: 'heyelsa',
             };
         } catch (error) {
@@ -288,51 +267,43 @@ class HeyElsaClient {
     }
 
     /**
-     * Search for tokens by name or symbol
-     * @param {string} query - Search query
-     * @param {number} limit - Max results (default: 5)
+     * Search for tokens
+     * Endpoint: /api/search_token
      */
     async searchToken(query, limit = 5) {
         try {
-            const response = await this.request('/v1/token/search', {
-                query: query,
+            const response = await this.request('/api/search_token', {
+                symbol_or_address: query,
                 limit: limit,
             });
 
-            return response?.tokens || [];
+            return response?.result?.results || [];
         } catch (error) {
             console.warn('[HeyElsa] searchToken failed:', error.message);
             return [];
         }
     }
 
-    /**
-     * Check if x402 payments are enabled
-     */
     isPaymentEnabled() {
         return this.x402Enabled;
     }
 }
 
-// Export singleton instance
 export const heyelsa = new HeyElsaClient();
 
-// Export convenience functions
 export const getTokenPrice = (symbol, chain) => heyelsa.getTokenPrice(symbol, chain);
 export const analyzeWallet = (address, chain) => heyelsa.analyzeWallet(address, chain);
 export const getPortfolio = (address, chain) => heyelsa.getPortfolio(address, chain);
 export const searchToken = (query, limit) => heyelsa.searchToken(query, limit);
 export const isPaymentEnabled = () => heyelsa.isPaymentEnabled();
 
-// Fallback price fetcher using CoinGecko
+// Fallback price fetcher using CoinGecko (unchanged)
 export async function getPriceWithFallback(tokenSymbol) {
-    // Try HeyElsa first
     const elsaPrice = await getTokenPrice(tokenSymbol);
     if (elsaPrice?.price) {
         return { ...elsaPrice, source: 'heyelsa' };
     }
 
-    // Fallback to CoinGecko
     console.log('[HeyElsa] Falling back to CoinGecko for:', tokenSymbol);
     try {
         const ids = {

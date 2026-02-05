@@ -8,7 +8,7 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    const { endpoint, ...params } = req.query;
+    const { endpoint } = req.query;
 
     if (!endpoint) {
         return res.status(400).json({ error: 'Missing endpoint parameter' });
@@ -19,10 +19,10 @@ export default async function handler(req, res) {
 
     try {
         // Build the target URL
-        const url = new URL(`${HEYELSA_API_URL}${endpoint}`);
-        Object.entries(params).forEach(([key, value]) => {
-            if (value) url.searchParams.append(key, value);
-        });
+        // If endpoint starts with /, strip it to avoid double slashes if base has trailing slash
+        // formatting: base + endpoint
+        const urlStr = `${HEYELSA_API_URL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+        const url = new URL(urlStr);
 
         console.log('[HeyElsa Proxy] Forwarding to:', url.toString());
 
@@ -37,10 +37,17 @@ export default async function handler(req, res) {
             headers['X-PAYMENT'] = req.headers['x-payment'];
         }
 
-        const response = await fetch(url.toString(), {
+        const fetchOptions = {
             method: req.method,
             headers,
-        });
+        };
+
+        // Forward body for POST requests
+        if (req.method === 'POST' && req.body) {
+            fetchOptions.body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+        }
+
+        const response = await fetch(url.toString(), fetchOptions);
 
         // Read response text first to handle non-JSON errors safeley
         const text = await response.text();
@@ -50,8 +57,6 @@ export default async function handler(req, res) {
             data = JSON.parse(text);
         } catch (e) {
             console.warn('[HeyElsa Proxy] Response was not JSON:', text.substring(0, 100));
-            // If parse fails but status is error, return the text error
-            // If success status but not JSON, wrap it
             data = { error: 'Non-JSON response', body: text };
         }
 
