@@ -1,3 +1,8 @@
+---
+name: basetrust-escrow
+description: Secure, non-custodial P2P escrow for AI agents on Base. Create deals, lock funds, resolve disputes without human intervention.
+---
+
 # BaseTrust Escrow Skill
 > **Secure, non-custodial P2P trading on Base.**
 
@@ -5,7 +10,7 @@
 
 ## Quick Start
 ```bash
-npx degit MAYANK-MAHAUR/BaseTrust/src/agent packages/plugin-basetrust
+npx degit MAYANK-MAHAUR/BaseTrust/src/agent ~/.openclaw/skills/basetrust
 ```
 
 **Contract Address:** `0xe7f874b494D2d015bb19752913B016A6DE3e143b`  
@@ -13,25 +18,22 @@ npx degit MAYANK-MAHAUR/BaseTrust/src/agent packages/plugin-basetrust
 
 ---
 
-## Guardrails (read first)
-- **Real Money:** This skill moves real ETH/USDC. Ensure you have user consent before signing transactions.
+## Guardrails
+- **Real Money:** This skill moves real ETH/USDC. Ensure consent before signing.
 - **Verification:** Always verify the `seller` address before creating a deal.
-- **Proof:** When calling `MARK_DELIVERED`, provide a verifiable URL (e.g., GitHub commit, Arweave link, Tweet).
+- **Proof:** When calling `MARK_DELIVERED`, provide a verifiable URL.
 
 ---
 
 ## How It Works
-1.  **Negotiate** — Agree on terms (Amount, Deliverables, Timeline) with your counterparty.
-2.  **Create** — Generates a smart contract escrow. Funds are locked.
-3.  **Deliver** — Seller completes work.
-4.  **Release** — Buyer approves work, funds move to seller.
+1. **Negotiate** — Agree on terms with your counterparty.
+2. **Create** — Lock funds in smart contract escrow.
+3. **Deliver** — Seller completes work.
+4. **Release** — Buyer approves, funds move to seller.
 
 ---
 
-## Step 1: Install & Configure
-Add the standard Eliza plugin to your agent.
-
-**Env Variables:**
+## Configuration
 ```env
 BASE_PRIVATE_KEY=0x...
 BASE_RPC_URL=https://mainnet.base.org
@@ -40,42 +42,55 @@ ESCROW_CONTRACT_ADDRESS=0xe7f874b494D2d015bb19752913B016A6DE3e143b
 
 ---
 
-## Step 2: Use Actions 🦞
-The plugin exposes these actions to your agent runtime.
+## Available Actions
 
-##  # Create a Deal
-> "Create an escrow deal with 0xSeller... for 0.05 ETH for the logo design."
-- **Action:** `CREATE_ESCROW`
-- **Params:** `seller` (address), `amount` (eth), `description` (string), `arbiter` (optional address)
+### CREATE_ESCROW
+> "Create an escrow deal with 0xSeller... for 0.05 ETH for logo design."
+- **Params:** `seller`, `amount`, `description`, `arbiter` (optional)
 
-### Accept a Deal
+### ACCEPT_DEAL
 > "Accept deal #42."
-- **Action:** `ACCEPT_DEAL`
-- **Params:** `escrowId` (number)
+- **Params:** `escrowId`
 
-### Mark Delivered
-> "I have finished the work. Confirming delivery."
-- **Action:** `MARK_DELIVERED`
-- **Params:** `escrowId`, `proof` (url/string)
+### MARK_DELIVERED
+> "I finished the work. Confirming delivery."
+- **Params:** `escrowId`, `proof` (url)
 
-### Release Funds
-> "The work looks good. Release the payment."
-- **Action:** `RELEASE_FUNDS`
+### RELEASE_FUNDS
+> "The work looks good. Release payment."
+- **Params:** `escrowId`
+
+### RAISE_DISPUTE
+> "I'm not satisfied with the delivery. Open dispute."
+- **Params:** `escrowId`
+
+### RESOLVE_DISPUTE
+> "As arbiter, I rule in favor of the seller."
+- **Params:** `escrowId`, `winner` (address)
+
+### CLAIM_REFUND
+> "The seller never accepted. Claim my refund."
+- **Params:** `escrowId`
+
+### CLAIM_AUTO_RELEASE
+> "Buyer hasn't responded in 72h. Auto-release my funds."
+- **Params:** `escrowId`
+
+### GET_ESCROW
+> "What's the status of deal #42?"
 - **Params:** `escrowId`
 
 ---
 
-## Step 3: Participation (Social)
-Let others know you are trading safely.
-1. Tweet using the composer below.
-2. Link your BaseTrust profile (if applicable).
-
-**One-click Composer:**
-`https://x.com/intent/tweet?text=I%20am%20trading%20securely%20on%20%40BaseTrust%20%F0%9F%9B%A1%EF%B8%8F%0AEscrow%20enabled.%20Agents%20welcome.`
+## Direct Contract Access
+Any agent can call the contract directly via viem/ethers:
+```javascript
+const contract = "0xe7f874b494D2d015bb19752913B016A6DE3e143b";
+await contract.createEscrow(seller, arbiter, amount, token, desc, accPeriod, delPeriod);
+```
 
 ---
 
-## API Reference
-This skill uses direct Smart Contract calls via `viem`.
-- **ABI:** embedded in `actions.ts`.
-- **Gas:** Costs are paid in ETH on Base.
+## Social
+Let others know you trade safely:
+`https://x.com/intent/tweet?text=Trading%20securely%20on%20%40BaseTrust%20%F0%9F%9B%A1%EF%B8%8F`
