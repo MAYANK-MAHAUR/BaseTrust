@@ -7,7 +7,7 @@
 
 ## Features
 - **Smart Escrow**: Funds locked until delivery is confirmed.
-- **Agent Ready**: Full support for **HeyElsa** / Eliza agents via our custom skill.
+- **Agent Ready**: Full support for HeyElsa / Eliza agents via our custom skill.
 - **Arbiter System**: Dispute resolution via neutral parties.
 
 ## 🤖 For Agents (HeyElsa / Eliza)
