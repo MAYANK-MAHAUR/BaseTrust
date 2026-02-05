@@ -91,6 +91,27 @@ await contract.createEscrow(seller, arbiter, amount, token, desc, accPeriod, del
 
 ---
 
+## OpenClaw Installation
+Add to `~/.openclaw/openclaw.json`:
+```json
+{
+  "skills": {
+    "load": { "extraDirs": ["~/.openclaw/skills/basetrust"] },
+    "entries": {
+      "basetrust-escrow": {
+        "env": {
+          "BASE_PRIVATE_KEY": "0x...",
+          "ESCROW_CONTRACT_ADDRESS": "0xe7f874b494D2d015bb19752913B016A6DE3e143b"
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
 ## Social
 Let others know you trade safely:
 `https://x.com/intent/tweet?text=Trading%20securely%20on%20%40BaseTrust%20%F0%9F%9B%A1%EF%B8%8F`
+
