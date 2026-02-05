@@ -15,7 +15,10 @@ import { createWalletClient, http, parseUnits, encodeFunctionData } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 
-const HEYELSA_API_URL = import.meta.env.VITE_HEYELSA_API_URL || 'https://x402.heyelsa.ai';
+// Use proxy in production to bypass CORS, direct API in development for testing
+const IS_PRODUCTION = import.meta.env.PROD;
+const HEYELSA_PROXY_URL = '/api/heyelsa';
+const HEYELSA_DIRECT_URL = import.meta.env.VITE_HEYELSA_API_URL || 'https://x402.heyelsa.ai';
 const PAYMENT_PRIVATE_KEY = import.meta.env.VITE_HEYELSA_PAYMENT_KEY;
 
 // Token address mappings for Base chain
@@ -89,10 +92,16 @@ async function createPaymentSignature(paymentDetails) {
 // x402-enabled client wrapper
 class HeyElsaClient {
     constructor() {
-        this.baseUrl = HEYELSA_API_URL;
+        this.useProxy = IS_PRODUCTION;
         this.cache = new Map();
         this.cacheTTL = 60000; // 1 minute cache
         this.x402Enabled = !!PAYMENT_PRIVATE_KEY;
+
+        if (this.useProxy) {
+            console.log('[HeyElsa] Using Vercel proxy (production)');
+        } else {
+            console.log('[HeyElsa] Using direct API (development)');
+        }
 
         if (this.x402Enabled) {
             console.log('[HeyElsa] x402 payments ENABLED');
@@ -116,12 +125,26 @@ class HeyElsaClient {
             return cached.data;
         }
 
-        const url = new URL(`${this.baseUrl}${endpoint}`);
-        Object.entries(params).forEach(([key, value]) => {
-            if (value !== undefined && value !== null) {
-                url.searchParams.append(key, value);
-            }
-        });
+        // Build URL based on environment
+        let url;
+        if (this.useProxy) {
+            // Use Vercel proxy - pass endpoint as query param
+            url = new URL(HEYELSA_PROXY_URL, window.location.origin);
+            url.searchParams.append('endpoint', endpoint);
+            Object.entries(params).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    url.searchParams.append(key, value);
+                }
+            });
+        } else {
+            // Direct API call (development)
+            url = new URL(`${HEYELSA_DIRECT_URL}${endpoint}`);
+            Object.entries(params).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    url.searchParams.append(key, value);
+                }
+            });
+        }
 
         console.log('[HeyElsa] Requesting:', url.toString());
 
