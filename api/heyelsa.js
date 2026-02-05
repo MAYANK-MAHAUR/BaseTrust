@@ -1,8 +1,3 @@
-/**
- * HeyElsa x402 API Proxy
- * Bypasses CORS by proxying browser requests through Vercel serverless function
- */
-
 export default async function handler(req, res) {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -46,12 +41,28 @@ export default async function handler(req, res) {
             headers,
         });
 
-        const data = await response.json();
+        // Read response text first to handle non-JSON errors safeley
+        const text = await response.text();
+        let data;
 
-        // Return response with original status code
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.warn('[HeyElsa Proxy] Response was not JSON:', text.substring(0, 100));
+            // If parse fails but status is error, return the text error
+            // If success status but not JSON, wrap it
+            data = { error: 'Non-JSON response', body: text };
+        }
+
+        // Return upstream status code
         res.status(response.status).json(data);
+
     } catch (error) {
-        console.error('[HeyElsa Proxy] Error:', error.message);
-        res.status(500).json({ error: 'Proxy request failed', message: error.message });
+        console.error('[HeyElsa Proxy] Fatal Error:', error);
+        res.status(500).json({
+            error: 'Proxy request failed',
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 }
