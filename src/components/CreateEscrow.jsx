@@ -272,7 +272,6 @@ export function CreateEscrow({ onSuccess }) {
             if (escrow !== undefined) {
                 setContractId(escrow)
                 setSuccess(true)
-                setSuccess(true)
             }
         } catch (err) {
             console.error('Create escrow error:', err)

@@ -11,6 +11,11 @@ import EscrowABI from '../contracts/EscrowABI.json'
 import MockUSDCABI from '../contracts/MockUSDCABI.json'
 import addresses from '../contracts/addresses.json'
 
+// Development-only logger to keep production console clean
+const devLog = (...args) => {
+    if (import.meta.env.DEV) console.log(...args)
+}
+
 // The Graph Subgraph URL for historical data
 const GRAPH_URL = 'https://api.studio.thegraph.com/query/1724573/escrow/version/latest'
 
@@ -336,7 +341,7 @@ export function EscrowsProvider({ children }) {
             const canSponsor = supportedCapabilities?.paymasterService?.supported
 
             if (canBatch && !isNativeETH) {
-                console.log("🚀 Using Batch Transaction (Approve + Create)")
+                devLog("🚀 Using Batch Transaction (Approve + Create)")
 
                 const calls = []
 
@@ -383,7 +388,7 @@ export function EscrowsProvider({ children }) {
                     } : undefined
                 })
 
-                console.log("Batch sent, bundle ID:", id)
+                devLog("Batch sent, bundle ID:", id)
                 // Note: We need to wait for the calls to be processed.
                 // For simplicity in this demo, we'll wait a fixed time or rely on the Real-time Event Listener to detect the 'EscrowCreated' event which updates the UI.
 
@@ -405,7 +410,7 @@ export function EscrowsProvider({ children }) {
                     })
 
                     if (allowance < amountBigInt) {
-                        console.log(`Approving ${escrowData.token}...`)
+                        devLog(`Approving ${escrowData.token}...`)
                         const approveTx = await writeContractAsync({
                             address: tokenAddress,
                             abi: MockUSDCABI,
@@ -413,12 +418,12 @@ export function EscrowsProvider({ children }) {
                             args: [ESCROW_ADDRESS, amountBigInt],
                         })
                         await publicClient.waitForTransactionReceipt({ hash: approveTx })
-                        console.log(`${escrowData.token} Approved`)
+                        devLog(`${escrowData.token} Approved`)
                     }
                 }
 
                 // 3. Create Escrow
-                console.log(`Creating ${escrowData.token} Escrow...`)
+                devLog(`Creating ${escrowData.token} Escrow...`)
 
                 // Simulate first
                 const { request } = await publicClient.simulateContract({
@@ -440,7 +445,7 @@ export function EscrowsProvider({ children }) {
 
                 const tx = await writeContractAsync(request)
                 const receipt = await publicClient.waitForTransactionReceipt({ hash: tx })
-                console.log("Escrow Created:", tx)
+                devLog("Escrow Created:", tx)
 
                 const log = receipt.logs.find(x => x.address.toLowerCase() === ESCROW_ADDRESS.toLowerCase())
                 const decodedLog = decodeEventLog({
@@ -450,7 +455,7 @@ export function EscrowsProvider({ children }) {
                 })
 
                 const newEscrowId = decodedLog.args.escrowId
-                console.log("New Escrow ID:", newEscrowId)
+                devLog("New Escrow ID:", newEscrowId)
 
                 // Refresh actions...
                 loadEscrows()
@@ -494,7 +499,7 @@ export function EscrowsProvider({ children }) {
                         targetUrl
                     })
                 })
-                console.log(`🔔 Notification sent to ${targetAddress} (FID: ${userData.fid})`)
+                devLog(`🔔 Notification sent to ${targetAddress} (FID: ${userData.fid})`)
             }
         } catch (err) {
             console.warn("Notification failed:", err)
@@ -512,7 +517,7 @@ export function EscrowsProvider({ children }) {
             return
         }
 
-        console.log(`Updating Escrow ${id}: Current State ${escrow.state} -> New State ${newState}`)
+        devLog(`Updating Escrow ${id}: Current State ${escrow.state} -> New State ${newState}`)
 
         let functionName = ''
         let args = [BigInt(id)]
@@ -595,17 +600,17 @@ export function EscrowsProvider({ children }) {
         }
 
         try {
-            console.log(`Calling Contract: ${functionName}`, args)
+            devLog(`Calling Contract: ${functionName}`, args)
             const tx = await writeContractAsync({
                 address: ESCROW_ADDRESS,
                 abi: EscrowABI,
                 functionName,
                 args
             })
-            console.log("Transaction sent:", tx)
+            devLog("Transaction sent:", tx)
 
             await publicClient.waitForTransactionReceipt({ hash: tx })
-            console.log("Transaction confirmed!")
+            devLog("Transaction confirmed!")
 
             // Refresh immediately + retries for Graph indexing
             loadEscrows()
@@ -653,7 +658,8 @@ export function EscrowsProvider({ children }) {
                 args: [BigInt(id)]
             })
 
-            const tokenAddr = data[4].toLowerCase()
+            // Struct order: 0:buyer, 1:seller, 2:arbiter, 3:token, 4:amount, 5:state, ...
+            const tokenAddr = data[3].toLowerCase()
             const isETH = tokenAddr === '0x0000000000000000000000000000000000000000'
             const isUSDC = tokenAddr === addresses.USDC?.toLowerCase() || tokenAddr === addresses['8453']?.USDC?.toLowerCase()
 
@@ -665,13 +671,13 @@ export function EscrowsProvider({ children }) {
                 buyer: data[0],
                 seller: data[1],
                 arbiter: data[2],
-                amount: formatUnits(data[3], decimals),
+                amount: formatUnits(data[4], decimals),
                 token: symbol,
-                description: data[5],
-                state: data[6],
-                deadline: Number(data[7]) * 1000,
+                description: data[11],
+                state: Number(data[5]),
+                deadline: (Number(data[5]) === 0 ? Number(data[6]) : Number(data[7])) * 1000,
                 deliveryTimestamp: Number(data[8]) * 1000,
-                proofOfDelivery: data[9],
+                proofOfDelivery: data[12],
             }
 
             // Optional: Merge with Supabase if needed (omitted for speed in public view)

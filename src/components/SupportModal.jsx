@@ -28,7 +28,7 @@ export function SupportModal({ onClose }) {
 
     const handleDonate = () => {
         if (!amount || isNaN(amount)) return
-        console.log("Initiating donation...", amount)
+        if (import.meta.env.DEV) console.log("Initiating donation...", amount)
         try {
             sendTransaction({
                 to: DONATION_ADDRESS,

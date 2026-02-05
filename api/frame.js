@@ -27,10 +27,16 @@ const escapeHtml = (str) => {
 
 export default async function handler(request) {
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const idParam = searchParams.get('id');
 
-    if (!id) {
-        return new Response('Missing ID', { status: 400 });
+    // Validate id is a positive integer
+    if (!idParam || !/^\d+$/.test(idParam)) {
+        return new Response('Invalid or missing ID', { status: 400 });
+    }
+
+    const id = parseInt(idParam, 10);
+    if (isNaN(id) || id < 0 || id > Number.MAX_SAFE_INTEGER) {
+        return new Response('ID out of range', { status: 400 });
     }
 
     // Default values

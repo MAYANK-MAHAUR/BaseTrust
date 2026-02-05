@@ -18,7 +18,7 @@ export function WalletButton() {
     useEffect(() => {
         // PRODUCTION: Enforce Base Mainnet
         if (!import.meta.env.DEV && isConnected && chainId !== base.id) {
-            console.log("Production: Switching to Base Mainnet")
+            if (import.meta.env.DEV) console.log("Production: Switching to Base Mainnet")
             switchChain({ chainId: base.id })
             return
         }

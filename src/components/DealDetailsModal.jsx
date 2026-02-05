@@ -1,5 +1,5 @@
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, Component } from 'react'
 import { Card } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
@@ -9,7 +9,36 @@ import { ChatBox } from './ChatBox'
 import { X, CheckCircle2, AlertCircle, ShieldCheck, Share2 } from 'lucide-react'
 import { EscrowState } from '../hooks/useEscrows'
 
-export function DealDetailsModal({ escrow, currentUser, onClose, onUpdateState }) {
+// Error Boundary for graceful failure handling
+class DealErrorBoundary extends Component {
+    state = { hasError: false }
+    static getDerivedStateFromError() { return { hasError: true } }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="p-8 text-center text-muted-foreground">
+                    <AlertCircle className="w-8 h-8 mx-auto mb-2 text-destructive" />
+                    <p>Failed to load deal details.</p>
+                    <Button variant="outline" className="mt-4" onClick={() => this.setState({ hasError: false })}>
+                        Retry
+                    </Button>
+                </div>
+            )
+        }
+        return this.props.children
+    }
+}
+
+// Wrap modal with error boundary
+export function DealDetailsModal(props) {
+    return (
+        <DealErrorBoundary>
+            <DealDetailsModalContent {...props} />
+        </DealErrorBoundary>
+    )
+}
+
+function DealDetailsModalContent({ escrow, currentUser, onClose, onUpdateState }) {
     const modalRef = useRef(null)
     const [autoReleaseInfo, setAutoReleaseInfo] = useState(null)
     const [deadlinePassed, setDeadlinePassed] = useState(false)

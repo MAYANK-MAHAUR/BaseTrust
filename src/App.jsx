@@ -83,7 +83,7 @@ function AppContent() {
             }, { onConflict: 'fid' })
 
             if (error) console.error("Failed to map user:", error)
-            else console.log("✅ User mapped successfully")
+            else if (import.meta.env.DEV) console.log("✅ User mapped successfully")
           } else {
             console.warn("⚠️ No user FID in context. Are you running in a frame?")
           }
