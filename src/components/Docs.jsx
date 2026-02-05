@@ -120,6 +120,26 @@ runtime.registerPlugin(baseTrustPlugin);`}
                                     <div className="flex items-center gap-1">✅ GET_ESCROW</div>
                                 </div>
                             </div>
+
+                            <div className="space-y-2">
+                                <h4 className="text-sm font-medium">4. OpenClaw Config</h4>
+                                <p className="text-xs text-muted-foreground">Add to <code>~/.openclaw/openclaw.json</code>:</p>
+                                <div className="bg-muted p-3 rounded-md font-mono text-xs overflow-x-auto whitespace-pre">
+                                    {`{
+  "skills": {
+    "load": { "extraDirs": ["~/.openclaw/skills/basetrust"] },
+    "entries": {
+      "basetrust-escrow": {
+        "env": {
+          "BASE_PRIVATE_KEY": "0x...",
+          "ESCROW_CONTRACT_ADDRESS": "0xe7f..."
+        }
+      }
+    }
+  }
+}`}
+                                </div>
+                            </div>
                         </Card>
                     </section>
 
