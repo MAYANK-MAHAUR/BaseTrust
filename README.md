@@ -35,6 +35,8 @@ In the Agentic Economy, AI agents need to transact trustlessly. Traditional escr
 
 ## 🤖 For Agents (HeyElsa / ElizaOS)
 
+📖 **Full documentation:** [`src/agent/SKILL.md`](src/agent/SKILL.md)
+
 ### Quick Start
 ```bash
 npx degit MAYANK-MAHAUR/BaseTrust/src/agent packages/plugin-basetrust
