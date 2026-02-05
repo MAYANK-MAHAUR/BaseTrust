@@ -53,13 +53,15 @@ async function createPaymentSignature(paymentDetails) {
             transport: http(),
         });
 
-        // Extract payment info
-        console.log('[HeyElsa x402] Creating signature for requirements:', paymentDetails);
+        const { recipient, payTo, amount, maxAmountRequired, nonce, expires } = paymentDetails || {};
 
-        const { recipient, amount, nonce, expires, maxAmountRequired } = paymentDetails || {};
+        // Map fields with fallbacks
+        const finalRecipient = recipient || payTo;
         const finalAmount = amount || maxAmountRequired;
+        const finalNonce = nonce || Date.now().toString(); // Generate nonce if missing
+        const finalExpires = expires || (Date.now() + 3600 * 1000).toString(); // Default 1h expiry
 
-        if (!finalAmount || !recipient || !nonce || !expires) {
+        if (!finalAmount || !finalRecipient) {
             // Check if nested in 'requirements'
             if (paymentDetails?.requirements) {
                 return createPaymentSignature(paymentDetails.requirements);
@@ -70,13 +72,6 @@ async function createPaymentSignature(paymentDetails) {
                 return createPaymentSignature(paymentDetails.accepts[0]);
             }
             console.error('[HeyElsa x402] Invalid payment requirements structure:', paymentDetails);
-            console.error('[HeyElsa x402] Missing fields:', {
-                amount: !finalAmount,
-                recipient: !recipient,
-                nonce: !nonce,
-                expires: !expires,
-                keys: Object.keys(paymentDetails || {})
-            });
             return null;
         }
 
@@ -88,10 +83,10 @@ async function createPaymentSignature(paymentDetails) {
             type: 'x402-payment',
             chain: 'base',
             token: USDC_ADDRESS,
-            recipient,
+            recipient: finalRecipient,
             amount: amountWei.toString(),
-            nonce,
-            expires,
+            nonce: finalNonce,
+            expires: finalExpires,
             payer: account.address,
         });
 
