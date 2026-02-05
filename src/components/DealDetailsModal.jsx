@@ -6,8 +6,9 @@ import { Badge } from './ui/badge'
 import { Label } from './ui/label'
 import { Input } from './ui/input'
 import { ChatBox } from './ChatBox'
-import { X, CheckCircle2, AlertCircle, ShieldCheck, Share2 } from 'lucide-react'
+import { X, CheckCircle2, AlertCircle, ShieldCheck, Share2, Loader2 } from 'lucide-react'
 import { EscrowState } from '../hooks/useEscrows'
+import { analyzeWallet } from '../lib/heyelsa'
 
 // Error Boundary for graceful failure handling
 class DealErrorBoundary extends Component {
@@ -42,6 +43,31 @@ function DealDetailsModalContent({ escrow, currentUser, onClose, onUpdateState }
     const modalRef = useRef(null)
     const [autoReleaseInfo, setAutoReleaseInfo] = useState(null)
     const [deadlinePassed, setDeadlinePassed] = useState(false)
+
+    // HeyElsa wallet analysis for seller trust verification
+    const [sellerAnalysis, setSellerAnalysis] = useState({ loading: true, data: null })
+
+    // Fetch seller wallet analysis using HeyElsa
+    useEffect(() => {
+        if (!escrow?.seller) {
+            setSellerAnalysis({ loading: false, data: null })
+            return
+        }
+
+        const fetchAnalysis = async () => {
+            setSellerAnalysis({ loading: true, data: null })
+            try {
+                const analysis = await analyzeWallet(escrow.seller)
+                setSellerAnalysis({ loading: false, data: analysis })
+                console.log('[HeyElsa] Seller analysis:', analysis)
+            } catch (err) {
+                console.warn('[HeyElsa] Wallet analysis failed:', err)
+                setSellerAnalysis({ loading: false, data: null })
+            }
+        }
+
+        fetchAnalysis()
+    }, [escrow?.seller])
 
     // Calculate time for auto-release (using useEffect to avoid Date.now in render)
     useEffect(() => {
@@ -183,11 +209,55 @@ function DealDetailsModalContent({ escrow, currentUser, onClose, onUpdateState }
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 text-xs font-bold">S</div>
-                                <div className="flex-1">
+                            <div className="flex items-start gap-3">
+                                <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 text-xs font-bold shrink-0">S</div>
+                                <div className="flex-1 space-y-1">
                                     <p className="text-sm font-medium">Seller</p>
                                     <p className="text-xs text-muted-foreground font-mono">{escrow.seller}</p>
+
+                                    {/* HeyElsa Wallet Analysis */}
+                                    {sellerAnalysis.loading ? (
+                                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                            <span>Analyzing wallet...</span>
+                                        </div>
+                                    ) : sellerAnalysis.data ? (
+                                        <div className="mt-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800/30 space-y-1.5">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[9px] uppercase tracking-wider text-purple-600 dark:text-purple-400 font-semibold">
+                                                    HeyElsa Analysis
+                                                </span>
+                                                {sellerAnalysis.data.riskLevel && (
+                                                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${sellerAnalysis.data.riskLevel === 'low' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                                            sellerAnalysis.data.riskLevel === 'medium' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                                                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                        }`}>
+                                                        {sellerAnalysis.data.riskLevel.toUpperCase()} RISK
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2 text-[10px]">
+                                                {sellerAnalysis.data.txCount > 0 && (
+                                                    <div>
+                                                        <span className="text-muted-foreground">Transactions:</span>
+                                                        <span className="ml-1 font-medium">{sellerAnalysis.data.txCount}</span>
+                                                    </div>
+                                                )}
+                                                {sellerAnalysis.data.portfolio > 0 && (
+                                                    <div>
+                                                        <span className="text-muted-foreground">Portfolio:</span>
+                                                        <span className="ml-1 font-medium">${sellerAnalysis.data.portfolio.toLocaleString()}</span>
+                                                    </div>
+                                                )}
+                                                {sellerAnalysis.data.walletAge && (
+                                                    <div>
+                                                        <span className="text-muted-foreground">Age:</span>
+                                                        <span className="ml-1 font-medium">{sellerAnalysis.data.walletAge} days</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ) : null}
                                 </div>
                             </div>
 

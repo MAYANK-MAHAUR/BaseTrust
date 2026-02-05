@@ -9,7 +9,6 @@ export function IdentityModal() {
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
-        // Show modal once per session (not permanently dismissed)
         if (!sessionStorage.getItem("basetrust_identity_shown")) {
             setIsOpen(true);
         }

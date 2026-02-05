@@ -112,6 +112,7 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 - **Contracts**: Solidity (Hardhat)
 - **Database**: Supabase
 - **Agent SDK**: ElizaOS / HeyElsa compatible
+- **DeFi API**: [HeyElsa x402](https://x402.heyelsa.ai) — Token prices & wallet analysis
 
 ---
 

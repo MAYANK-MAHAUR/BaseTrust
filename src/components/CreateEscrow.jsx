@@ -3,6 +3,7 @@ import { useAccount, useBalance, usePublicClient } from 'wagmi'
 import { formatUnits } from 'viem'
 import { useEscrows } from '../hooks/useEscrows'
 import { supabase } from '../lib/supabase'
+import { getPriceWithFallback } from '../lib/heyelsa'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 import { Input } from './ui/input'
@@ -51,19 +52,32 @@ export function CreateEscrow({ onSuccess }) {
         return null
     }
 
-    // Fetch prices from CoinGecko
+    // Track price source for displaying "Powered by" badge
+    const [priceSource, setPriceSource] = useState('loading')
+
+    // Fetch prices using HeyElsa API (with CoinGecko fallback)
     useEffect(() => {
         const fetchPrices = async () => {
             try {
-                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,usd-coin,tether&vs_currencies=usd')
-                const data = await res.json()
+                // Fetch all prices in parallel using HeyElsa
+                const [ethResult, usdcResult, usdtResult] = await Promise.all([
+                    getPriceWithFallback('ETH'),
+                    getPriceWithFallback('USDC'),
+                    getPriceWithFallback('USDT'),
+                ])
+
                 setPrices({
-                    eth: data.ethereum?.usd || 0,
-                    usdc: data['usd-coin']?.usd || 1,
-                    usdt: data.tether?.usd || 1
+                    eth: ethResult?.price || 0,
+                    usdc: usdcResult?.price || 1,
+                    usdt: usdtResult?.price || 1
                 })
+
+                // Set source from first successful response
+                setPriceSource(ethResult?.source || usdcResult?.source || 'unknown')
+                console.log('[HeyElsa] Prices loaded:', { eth: ethResult, usdc: usdcResult, usdt: usdtResult })
             } catch (err) {
-                console.warn('Failed to fetch prices:', err)
+                console.warn('[HeyElsa] Failed to fetch prices:', err)
+                setPriceSource('error')
             }
         }
         fetchPrices()
@@ -71,6 +85,7 @@ export function CreateEscrow({ onSuccess }) {
         const interval = setInterval(fetchPrices, 60000)
         return () => clearInterval(interval)
     }, [])
+
 
     // Fetch token balance when token changes
     useEffect(() => {
@@ -402,9 +417,16 @@ export function CreateEscrow({ onSuccess }) {
                                             step="any"
                                         />
                                         {formData.amount && parseFloat(formData.amount) > 0 && (
-                                            <p className="text-xs text-muted-foreground">
-                                                ≈ ${getUsdValue()} USD
-                                            </p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-xs text-muted-foreground">
+                                                    ≈ ${getUsdValue()} USD
+                                                </p>
+                                                {priceSource === 'heyelsa' && (
+                                                    <span className="text-[9px] px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded font-medium">
+                                                        via HeyElsa
+                                                    </span>
+                                                )}
+                                            </div>
                                         )}
                                         {formData.token === 'ETH' && ethBalance && (
                                             <p className="text-xs text-muted-foreground">
