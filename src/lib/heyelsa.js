@@ -59,9 +59,14 @@ async function createPaymentSignature(paymentDetails) {
         const { recipient, amount, nonce, expires } = paymentDetails || {};
 
         if (!amount || !recipient || !nonce || !expires) {
-            // Check if nested in 'requirements' or 'data'
+            // Check if nested in 'requirements'
             if (paymentDetails?.requirements) {
                 return createPaymentSignature(paymentDetails.requirements);
+            }
+            // Check if nested in 'accepts' array (Standard x402)
+            if (Array.isArray(paymentDetails?.accepts) && paymentDetails.accepts.length > 0) {
+                console.log('[HeyElsa x402] Found payment requirements in accepts[0]');
+                return createPaymentSignature(paymentDetails.accepts[0]);
             }
             console.error('[HeyElsa x402] Invalid payment requirements structure:', paymentDetails);
             return null;
