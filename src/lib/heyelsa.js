@@ -54,7 +54,19 @@ async function createPaymentSignature(paymentDetails) {
         });
 
         // Extract payment info
-        const { recipient, amount, nonce, expires } = paymentDetails;
+        console.log('[HeyElsa x402] Creating signature for requirements:', paymentDetails);
+
+        const { recipient, amount, nonce, expires } = paymentDetails || {};
+
+        if (!amount || !recipient || !nonce || !expires) {
+            // Check if nested in 'requirements' or 'data'
+            if (paymentDetails?.requirements) {
+                return createPaymentSignature(paymentDetails.requirements);
+            }
+            console.error('[HeyElsa x402] Invalid payment requirements structure:', paymentDetails);
+            return null;
+        }
+
         const amountWei = parseUnits(amount.toString(), 6); // USDC has 6 decimals
 
         // Create payment message to sign
@@ -152,6 +164,8 @@ class HeyElsaClient {
                 console.log('[HeyElsa x402] Payment required, processing...');
 
                 const paymentInfo = await response.json();
+                console.log('[HeyElsa x402] Payment requirements:', paymentInfo); // DEBUG: Log actual structure
+
                 const paymentHeader = await createPaymentSignature(paymentInfo);
 
                 if (paymentHeader) {
