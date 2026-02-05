@@ -1,6 +1,6 @@
 import { ImageResponse } from '@vercel/og';
 import { createPublicClient, http, formatUnits } from 'viem';
-import { base, baseSepolia, hardhat } from 'viem/chains';
+import { base, baseSepolia } from 'viem/chains';
 import EscrowABI from '../src/contracts/EscrowABI.json';
 import addresses from '../src/contracts/addresses.json';
 

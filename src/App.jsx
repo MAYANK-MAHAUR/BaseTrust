@@ -37,6 +37,8 @@ function DealPage() {
   )
 }
 
+import { IdentityModal } from './components/IdentityModal'
+
 function AppContent() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -49,7 +51,6 @@ function AppContent() {
 
       // If we have context (running as Mini App) AND wallet connected, link them
       if (isConnected && address && sdk.context?.user?.fid) {
-        console.log("🔗 Linking Wallet to FID:", address, sdk.context.user.fid)
         try {
           // Correct way to access context in v4 SDK
           const context = await sdk.context
@@ -59,15 +60,11 @@ function AppContent() {
 
           // Mock data for localhost testing
           if (!fid && window.location.hostname === 'localhost') {
-            console.warn("⚠️ Localhost detected: Using Mock FID")
             fid = 999999
             username = 'test-user'
           }
 
           if (fid) {
-            console.log("✅ Resolved Context:", context)
-            console.log("✅ Got FID:", fid)
-
             // 1. Try to delete any existing mapping for this address (to avoid conflicts if wallet switched FIDs)
             const { error: deleteError } = await supabase
               .from('users')
@@ -94,6 +91,7 @@ function AppContent() {
           console.error("Mapping error:", err)
         }
       }
+
     }
 
     init()
@@ -113,6 +111,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-background font-sans antialiased text-foreground pt-14 pb-16 md:pb-0">
+      <IdentityModal />
       <NetworkWarning />
       <Navbar activeTab={getActiveTab()} navigate={navigate} />
 
@@ -120,6 +119,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={
             <Hero
+              showAgentBanner={true}
               onCreateClick={() => navigate('/create')}
               onDashboardClick={() => navigate('/dashboard')}
               onTermsClick={() => navigate('/terms')}

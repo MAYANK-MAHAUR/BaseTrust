@@ -1,0 +1,12 @@
+{
+    "name": "@basetrust/agent-skill",
+    "version": "1.0.0",
+    "description": "Eliza plugin for BaseTrust Escrow interactions",
+    "main": "index.ts",
+    "dependencies": {
+        "viem": "^2.0.0"
+    },
+    "peerDependencies": {
+        "@elizaos/core": "*"
+    }
+}

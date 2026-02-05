@@ -1,7 +1,8 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { useAccount, usePublicClient, useWalletClient, useWriteContract, useReadContract } from 'wagmi'
+import { useAccount, usePublicClient, useWalletClient, useWriteContract } from 'wagmi'
 import { useSendCalls, useCapabilities } from 'wagmi/experimental'
-import { parseEther, parseUnits, formatUnits, decodeEventLog } from 'viem'
+import { parseUnits, formatUnits, decodeEventLog } from 'viem'
 import { hardhat, baseSepolia, base } from 'wagmi/chains'
 import React from 'react'
 import { supabase } from '../lib/supabase'
@@ -98,7 +99,6 @@ export function EscrowsProvider({ children }) {
             // Try The Graph first (for Base mainnet)
             if (activeChainId === base.id) {
                 try {
-                    console.log("📊 Loading escrows from The Graph...")
                     const graphEscrows = await fetchFromGraph()
 
                     const escrowsData = graphEscrows.map(e => {
@@ -151,7 +151,6 @@ export function EscrowsProvider({ children }) {
                         }
                     }
 
-                    console.log(`✅ Loaded ${finalEscrows.length} escrows from The Graph`)
                     setEscrows(finalEscrows)
                     if (!isBackground) setLoading(false)
                     return
@@ -169,7 +168,7 @@ export function EscrowsProvider({ children }) {
             // Check if we can reach the node first (basic health check)
             try {
                 await publicClient.getBlockNumber()
-            } catch (rpcErr) {
+            } catch {
                 console.warn("RPC Node unreachable. Is your local node running?")
                 if (!isBackground) setLoading(false)
                 return
@@ -266,24 +265,40 @@ export function EscrowsProvider({ children }) {
         loadEscrows()
     }, [loadEscrows])
 
-    // --- Real-time Updates via Contract Events ---
+    // --- Real-time Updates via Contract Events + Visibility-aware Polling ---
     useEffect(() => {
         const supportedChains = [hardhat.id, baseSepolia.id, base.id]
         if (!publicClient || !ESCROW_ADDRESS || !supportedChains.includes(activeChainId)) return
 
+        let pollInterval = null
+        let isVisible = !document.hidden
+        const ACTIVE_POLL_MS = 15000
+        const IDLE_POLL_MS = 60000
+
+        const handleVisibilityChange = () => {
+            isVisible = !document.hidden
+            if (isVisible) loadEscrows(true)
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+
+        pollInterval = setInterval(() => {
+            if (isVisible) loadEscrows(true)
+        }, isVisible ? ACTIVE_POLL_MS : IDLE_POLL_MS)
+
         const unwatch = publicClient.watchContractEvent({
             address: ESCROW_ADDRESS,
             abi: EscrowABI,
-            onLogs: logs => {
-                console.log('⚡ Real-time Event Detected:', logs)
-                // Delay refresh to give The Graph time to index (~3-5 seconds)
-                setTimeout(() => {
-                    loadEscrows(true) // Background refresh (no loading spinner)
-                }, 3000)
+            onLogs: () => {
+                setTimeout(() => loadEscrows(true), 3000)
             }
         })
 
-        return () => unwatch()
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange)
+            clearInterval(pollInterval)
+            unwatch()
+        }
     }, [publicClient, ESCROW_ADDRESS, loadEscrows, activeChainId])
 
     // EIP-5792: Batch & Paymaster Support
@@ -524,20 +539,20 @@ export function EscrowsProvider({ children }) {
             }
         }
         else if (newState === EscrowState.COMPLETED) {
-            // 1. Buyer releasing
-            if (escrow.state === EscrowState.AWAITING_DELIVERY || escrow.state === EscrowState.DELIVERED) {
+            // 1. AUTO-RELEASE (Seller claims after 72h)
+            if (escrow.state === EscrowState.DELIVERED && Date.now() > escrow.deliveryTimestamp + (3 * 24 * 60 * 60 * 1000)) {
+                functionName = 'claimAutoRelease'
+            }
+            // 2. Buyer releasing
+            else if (escrow.state === EscrowState.AWAITING_DELIVERY || escrow.state === EscrowState.DELIVERED) {
                 functionName = 'release'
                 args = [BigInt(id)]
                 notification = { target: escrow.seller, title: "Funds Released", body: "Buyer released the funds to you!" }
             }
-            // 2. Arbiter resolving to Seller
+            // 3. Arbiter resolving to Seller
             else if (escrow.state === EscrowState.DISPUTED) {
                 functionName = 'resolveDispute'
                 args = [BigInt(id), escrow.seller]
-            }
-            // 3. AUTO-RELEASE (Seller claims after 72h)
-            else if (escrow.state === EscrowState.DELIVERED && Date.now() > escrow.deliveryTimestamp + (3 * 24 * 60 * 60 * 1000)) {
-                functionName = 'claimAutoRelease'
             }
             else {
                 console.error("Invalid transition to COMPLETE from", escrow.state)
@@ -614,7 +629,7 @@ export function EscrowsProvider({ children }) {
             enhancedError.originalError = err
             throw enhancedError
         }
-    }, [escrows, publicClient, ESCROW_ADDRESS, writeContractAsync, loadEscrows])
+    }, [escrows, publicClient, ESCROW_ADDRESS, writeContractAsync, loadEscrows, address])
 
 
 

@@ -1,6 +1,6 @@
 import { http, fallback, createConfig } from 'wagmi'
 import { base, baseSepolia, mainnet, hardhat } from 'wagmi/chains'
-import { injected, walletConnect, coinbaseWallet } from 'wagmi/connectors'
+import { injected, coinbaseWallet } from 'wagmi/connectors'
 
 export const config = createConfig({
   chains: [base, baseSepolia, mainnet, ...(import.meta.env.DEV ? [hardhat] : [])],

@@ -22,7 +22,7 @@ export function ChatBox({ supabaseId, contractId, currentUser, className }) {
 
         // 1. Load initial messages
         const fetchMessages = async () => {
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('messages')
                 .select('*')
                 .eq('escrow_id', chatRoomId)
@@ -97,7 +97,7 @@ export function ChatBox({ supabaseId, contractId, currentUser, className }) {
         }
         setMessages(prev => [...prev, optimisticMsg])
 
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('messages')
             .insert([{
                 escrow_id: chatRoomId,
@@ -110,15 +110,6 @@ export function ChatBox({ supabaseId, contractId, currentUser, className }) {
             console.error("Failed to send:", error)
             // Rollback optimistic update
             setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id))
-            alert("Failed to send message. Please try again.")
-        } else {
-            // Replace optimistic message with real message from DB to get correct ID
-            // BUT, the subscription might double-add it if we are not careful.
-            // Best practice: rely on subscription for final state, but keep optimistic for speed.
-            // If we get an event with the same ID, we should dedupe. 
-            // Since subscription adds to end, we might see duplicates if we don't handle it.
-            // Simpler: Just rely on optimistic for "me", and ignore my own "INSERT" event?
-            // Or filter duplicates in the state updater.
         }
     }
 

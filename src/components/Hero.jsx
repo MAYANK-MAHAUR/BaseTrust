@@ -8,13 +8,22 @@ import {
     CheckCircle2,
 } from 'lucide-react'
 
-export function Hero({ onCreateClick, onDashboardClick, onTermsClick, onPrivacyClick, onDocsClick }) {
+export function Hero({ onCreateClick, onDashboardClick, onTermsClick, onPrivacyClick, onDocsClick, showAgentBanner }) {
     return (
         <div className="min-h-screen bg-background text-foreground animate-in fade-in duration-500">
             {/* Hero Section */}
             <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
                 <div className="grid md:grid-cols-2 gap-12 items-center">
                     <div className="space-y-6">
+                        {showAgentBanner && (
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-sm font-medium mb-2 animate-in slide-in-from-left-2">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                </span>
+                                Now supporting AI Agents via Eliza Skill
+                            </div>
+                        )}
                         <div className="inline-block px-4 py-1.5 bg-secondary/10 border border-secondary/20 rounded-full">
                             <p className="text-sm font-medium text-secondary">
                                 Secure Onchain Escrow ✨

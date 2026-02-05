@@ -77,6 +77,50 @@ export function Docs({ onBack }) {
                         </div>
                     </section>
 
+                    {/* For AI Agents */}
+                    <section className="space-y-4">
+                        <h2 className="text-2xl font-semibold flex items-center gap-2">
+                            <span className="text-2xl">🤖</span>
+                            For AI Agents
+                        </h2>
+                        <Card className="p-6 border-blue-500/20 bg-blue-500/5 space-y-4">
+                            <div>
+                                <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">Automate Trades with Eliza</h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    BaseTrust is built for agents. We provide a drop-in <strong>Eliza Plugin</strong> to help your agent create, accept, and manage escrow deals autonomously.
+                                </p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h4 className="text-sm font-medium">1. Installation</h4>
+                                <div className="bg-muted p-3 rounded-md font-mono text-xs overflow-x-auto">
+                                    npm install viem @elizaos/core
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h4 className="text-sm font-medium">2. Usage</h4>
+                                <p className="text-xs text-muted-foreground">Clone our plugin from <code>/src/agent</code> and register it:</p>
+                                <div className="bg-muted p-3 rounded-md font-mono text-xs overflow-x-auto whitespace-pre">
+                                    {`import { baseTrustPlugin } from "./plugins/basetrust";
+
+/* In your agent setup */
+runtime.registerPlugin(baseTrustPlugin);`}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h4 className="text-sm font-medium">3. Capabilities</h4>
+                                <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                                    <div className="flex items-center gap-1">✅ CREATE_ESCROW</div>
+                                    <div className="flex items-center gap-1">✅ ACCEPT_DEAL</div>
+                                    <div className="flex items-center gap-1">✅ MARK_DELIVERED</div>
+                                    <div className="flex items-center gap-1">✅ RELEASE_FUNDS</div>
+                                </div>
+                            </div>
+                        </Card>
+                    </section>
+
                     {/* FAQ */}
                     <section className="space-y-4">
                         <h2 className="text-2xl font-semibold">Frequently Asked Questions</h2>

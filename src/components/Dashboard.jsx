@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Avatar, Name, Identity } from '@coinbase/onchainkit/identity'
-import confetti from 'canvas-confetti'
+
 
 import { useAccount } from 'wagmi'
 import { useEscrows, EscrowState } from '../hooks/useEscrows'
@@ -16,31 +16,32 @@ import { Lock, Plus, Clock, CheckCircle2, AlertCircle, MessageSquare } from 'luc
 
 export function Dashboard({ onCreateClick, initialDealId, onModalClose }) {
     const navigate = useNavigate()
-    const { address, isConnected } = useAccount()
+    const { address } = useAccount()
     const { getMyEscrows, loading, updateEscrowState, fetchDealById } = useEscrows()
     const [filter, setFilter] = useState('Active')
     const [openChatId, setOpenChatId] = useState(null)
     const [publicDeal, setPublicDeal] = useState(null)
 
-    const myEscrows = getMyEscrows() || []
+    const myEscrows = useMemo(() => getMyEscrows() || [], [getMyEscrows])
 
     useEffect(() => {
-        if (initialDealId !== undefined && initialDealId !== null) {
-            // Check if it's already in my escrows
-            const found = myEscrows.find(e => e.id === initialDealId)
-            if (found) {
-                setOpenChatId(initialDealId)
-            } else {
-                // Fetch for public view
-                fetchDealById(initialDealId).then(deal => {
-                    if (deal) {
-                        setPublicDeal(deal)
-                        setOpenChatId(initialDealId)
-                    }
-                })
-            }
+        if (initialDealId === undefined || initialDealId === null) return
+
+        // Check if it's already in my escrows
+        const found = myEscrows.find(e => e.id === initialDealId)
+        if (found) {
+            setOpenChatId(prev => prev === initialDealId ? prev : initialDealId)
+        } else {
+            // Fetch for public view
+            fetchDealById(initialDealId).then(deal => {
+                if (deal) {
+                    setPublicDeal(deal)
+                    setOpenChatId(initialDealId)
+                }
+            })
         }
-    }, [initialDealId, myEscrows, fetchDealById])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialDealId, fetchDealById])
 
     const filteredEscrows = myEscrows.filter(escrow => {
         if (filter === 'Active') {

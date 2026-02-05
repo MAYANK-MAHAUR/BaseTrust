@@ -1,4 +1,5 @@
-import { useRef } from 'react'
+
+import { useRef, useState, useEffect } from 'react'
 import { Card } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
@@ -9,9 +10,37 @@ import { X, CheckCircle2, AlertCircle, ShieldCheck, Share2 } from 'lucide-react'
 import { EscrowState } from '../hooks/useEscrows'
 
 export function DealDetailsModal({ escrow, currentUser, onClose, onUpdateState }) {
-    if (!escrow) return null
-
     const modalRef = useRef(null)
+    const [autoReleaseInfo, setAutoReleaseInfo] = useState(null)
+    const [deadlinePassed, setDeadlinePassed] = useState(false)
+
+    // Calculate time for auto-release (using useEffect to avoid Date.now in render)
+    useEffect(() => {
+        if (!escrow?.deliveryTimestamp) {
+            setAutoReleaseInfo(null)
+            return
+        }
+        const releaseTime = escrow.deliveryTimestamp + (3 * 24 * 60 * 60 * 1000)
+        const timeLeft = releaseTime - Date.now()
+        if (timeLeft <= 0) {
+            setAutoReleaseInfo({ expired: true })
+        } else {
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24))
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+            setAutoReleaseInfo({ days, hours, expired: false })
+        }
+    }, [escrow?.deliveryTimestamp])
+
+    // Check if deadline has passed (for refund eligibility)
+    useEffect(() => {
+        if (escrow?.deadline) {
+            setDeadlinePassed(Date.now() > escrow.deadline)
+        } else {
+            setDeadlinePassed(false)
+        }
+    }, [escrow?.deadline])
+
+    if (!escrow) return null
 
     // Close on backdrop click
     const handleBackdropClick = (e) => {
@@ -273,25 +302,16 @@ export function DealDetailsModal({ escrow, currentUser, onClose, onUpdateState }
                                     </div>
                                 )}
 
-                                {(() => {
-                                    const releaseTime = escrow.deliveryTimestamp + (3 * 24 * 60 * 60 * 1000)
-                                    const timeLeft = releaseTime - Date.now()
-                                    if (timeLeft > 0) {
-                                        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24))
-                                        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-                                        return (
-                                            <div className="text-[9px] text-muted-foreground text-center uppercase tracking-widest bg-muted/30 py-1 rounded">
-                                                Auto-Release in {days}d {hours}h
-                                            </div>
-                                        )
-                                    } else if (isSeller) {
-                                        return (
-                                            <Button size="xs" variant="outline" className="w-full h-7 border-green-500/50 text-green-600 text-[10px]" onClick={() => onUpdateState(escrow.id, EscrowState.COMPLETED)}>
-                                                Claim Auto-Release Now
-                                            </Button>
-                                        )
-                                    }
-                                })()}
+                                {autoReleaseInfo && !autoReleaseInfo.expired && (
+                                    <div className="text-[9px] text-muted-foreground text-center uppercase tracking-widest bg-muted/30 py-1 rounded">
+                                        Auto-Release in {autoReleaseInfo.days}d {autoReleaseInfo.hours}h
+                                    </div>
+                                )}
+                                {autoReleaseInfo?.expired && isSeller && (
+                                    <Button size="xs" variant="outline" className="w-full h-7 border-green-500/50 text-green-600 text-[10px]" onClick={() => onUpdateState(escrow.id, EscrowState.COMPLETED)}>
+                                        Claim Auto-Release Now
+                                    </Button>
+                                )}
                             </div>
                         )}
 
@@ -302,7 +322,7 @@ export function DealDetailsModal({ escrow, currentUser, onClose, onUpdateState }
                         )}
 
                         {/* Deadline-based refund - only buyer can claim, only in AWAITING_ACCEPTANCE state */}
-                        {isBuyer && escrow.state === EscrowState.AWAITING_ACCEPTANCE && escrow.deadline && Date.now() > escrow.deadline && (
+                        {isBuyer && escrow.state === EscrowState.AWAITING_ACCEPTANCE && escrow.deadline && deadlinePassed && (
                             <div className="space-y-2 pt-2 border-t border-red-500/10 text-center">
                                 <p className="text-[9px] text-red-500 uppercase font-black">Contract Deadline Reached</p>
                                 <Button size="sm" variant="destructive" className="w-full h-8 text-xs" onClick={() => onUpdateState(escrow.id, EscrowState.REFUNDED)}>

@@ -242,7 +242,7 @@ export function CreateEscrow({ onSuccess }) {
                 acceptancePeriod: 3 * 24 * 60 * 60 // 3 days to accept
             })
 
-            console.log("On-chain creation success, ID:", escrow)
+
 
             // Save to Supabase (only if we have a real ID)
             if (escrow !== undefined && typeof escrow === 'number' && supabase) {
@@ -266,17 +266,13 @@ export function CreateEscrow({ onSuccess }) {
 
                 if (dbError) {
                     console.error("Supabase Save Error:", dbError)
-                } else {
-                    console.log("Saved to Supabase!")
                 }
             }
 
             if (escrow !== undefined) {
                 setContractId(escrow)
                 setSuccess(true)
-                // setTimeout(() => {
-                //     onSuccess?.()
-                // }, 2000)
+                setSuccess(true)
             }
         } catch (err) {
             console.error('Create escrow error:', err)
