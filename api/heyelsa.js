@@ -14,7 +14,8 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing endpoint parameter' });
     }
 
-    const HEYELSA_API_URL = process.env.HEYELSA_API_URL || 'https://x402.heyelsa.ai';
+    // UPDATED: Correct API URL from HeyElsa documentation
+    const HEYELSA_API_URL = process.env.HEYELSA_API_URL || 'https://x402-api.heyelsa.ai';
 
     try {
         // Build the target URL

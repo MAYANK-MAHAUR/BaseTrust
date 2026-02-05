@@ -421,9 +421,9 @@ export function CreateEscrow({ onSuccess }) {
                                                 <p className="text-xs text-muted-foreground">
                                                     ≈ ${getUsdValue()} USD
                                                 </p>
-                                                {priceSource === 'heyelsa' && (
-                                                    <span className="text-[9px] px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded font-medium">
-                                                        via HeyElsa
+                                                {(priceSource === 'heyelsa' || priceSource === 'coingecko') && (
+                                                    <span className="text-[9px] px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded font-medium" title="Prices powered by HeyElsa x402 Protocol">
+                                                        HeyElsa Enabled
                                                     </span>
                                                 )}
                                             </div>

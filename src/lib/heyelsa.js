@@ -2,7 +2,7 @@
  * HeyElsa x402 API Client
  * DeFi API integration with micropayments for token prices and wallet analysis
  * 
- * Powered by HeyElsa - https://x402.heyelsa.ai
+ * Powered by HeyElsa - https://x402-api.heyelsa.ai
  * 
  * x402 Payment Protocol:
  * 1. Initial request returns 402 with payment requirements
@@ -18,7 +18,8 @@ import { base } from 'viem/chains';
 // Use proxy in production to bypass CORS, direct API in development for testing
 const IS_PRODUCTION = import.meta.env.PROD;
 const HEYELSA_PROXY_URL = '/api/heyelsa';
-const HEYELSA_DIRECT_URL = import.meta.env.VITE_HEYELSA_API_URL || 'https://x402.heyelsa.ai';
+// UPDATED: Correct API URL from HeyElsa documentation
+const HEYELSA_DIRECT_URL = import.meta.env.VITE_HEYELSA_API_URL || 'https://x402-api.heyelsa.ai';
 const PAYMENT_PRIVATE_KEY = import.meta.env.VITE_HEYELSA_PAYMENT_KEY;
 
 // Token address mappings for Base chain
@@ -181,7 +182,17 @@ class HeyElsaClient {
             }
 
             if (!response.ok) {
-                throw new Error(`HeyElsa API error: ${response.status}`);
+                // Try to read error body for better debugging of Vercel proxy errors
+                let errorDetails = '';
+                try {
+                    const errorText = await response.text();
+                    errorDetails = errorText ? ` - Body: ${errorText.substring(0, 200)}` : '';
+                    console.error(`[HeyElsa] API Error (${response.status}):`, errorText);
+                } catch (e) {
+                    console.error(`[HeyElsa] API Error (${response.status}) - Could not read body`);
+                }
+
+                throw new Error(`HeyElsa API error: ${response.status}${errorDetails}`);
             }
 
             const data = await response.json();
