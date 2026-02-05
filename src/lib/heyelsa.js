@@ -75,30 +75,58 @@ async function createPaymentSignature(paymentDetails) {
             return null;
         }
 
-        const amountWei = parseUnits(finalAmount.toString(), 6); // USDC has 6 decimals
+        const amountWei = BigInt(finalAmount.toString()); // Amount is likely in atomic units (wei)
 
-        // Create payment message to sign
-        const message = JSON.stringify({
-            version: '1',
-            type: 'x402-payment',
-            chain: 'base',
-            token: USDC_ADDRESS,
-            recipient: finalRecipient,
-            amount: amountWei.toString(),
-            nonce: finalNonce,
-            expires: finalExpires,
-            payer: account.address,
-        });
+        // EIP-3009 TransferWithAuthorization Domain
+        const domain = {
+            name: "USD Coin",
+            version: "2",
+            chainId: 8453, // Base
+            verifyingContract: USDC_ADDRESS,
+        };
 
-        // Sign the payment authorization
-        const signature = await walletClient.signMessage({
-            message,
+        // EIP-3009 Types
+        const types = {
+            TransferWithAuthorization: [
+                { name: "from", type: "address" },
+                { name: "to", type: "address" },
+                { name: "value", type: "uint256" },
+                { name: "validAfter", type: "uint256" },
+                { name: "validBefore", type: "uint256" },
+                { name: "nonce", type: "bytes32" },
+            ],
+        };
+
+        // Payment values
+        const values = {
+            from: account.address,
+            to: finalRecipient,
+            value: amountWei,
+            validAfter: 0n,
+            validBefore: BigInt(finalExpires), // 1h expiry
+            nonce: pad(toHex(BigInt(finalNonce)), { size: 32 }), // pad nonce to bytes32
+        };
+
+        console.log('[HeyElsa x402] Signing EIP-3009 TransferWithAuthorization:', values);
+
+        // Sign the typed data
+        const signature = await walletClient.signTypedData({
+            domain,
+            types,
+            primaryType: 'TransferWithAuthorization',
+            message: values,
         });
 
         // Create the X-PAYMENT header value
+        // Server expects the signed message params to verify/execute
         const paymentHeader = btoa(JSON.stringify({
             version: '1',
-            message,
+            message: {
+                ...values,
+                value: values.value.toString(),
+                validAfter: values.validAfter.toString(),
+                validBefore: values.validBefore.toString(),
+            },
             signature,
             payer: account.address,
         }));
