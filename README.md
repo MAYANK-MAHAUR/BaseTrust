@@ -99,8 +99,22 @@ npm run dev
 
 ### Environment
 ```env
+# BaseTrust Supabase Configuration
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+
+# Platform Admin Arbiter Address (receives 0.1% fee on successful deals)
+VITE_ADMIN_ARBITER=
+
+
+# Neynar Configuration
+NEYNAR_API_KEY=
+NOTIFICATION_SECRET=
+VITE_NOTIFICATION_SECRET=
+
+# HeyElsa x402 Payment (wallet with USDC on Base)
+VITE_HEYELSA_PAYMENT_KEY=
 ```
 
 ---
